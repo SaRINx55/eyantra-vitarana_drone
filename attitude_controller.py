@@ -152,7 +152,7 @@ class Edrone():
 	self.Kd[1] = pitch.Kd * 0.3
 
     def yaw_set_pid(self, yaw):
-	self.Kp[2] = yaw.Kp * 0.06
+	self.Kp[2] = yaw.Kp 
 	self.Ki[2] = yaw.Ki * 0.008
 	self.Kd[2] = yaw.Kd * 0.3
     # ----------------------------------------------------------------------------------------------------------------------
@@ -238,13 +238,28 @@ class Edrone():
 
 	#else:
 	
-	self.pwm_cmd.prop1 = self.throttle_pwm + self.out_roll - self.out_pitch
-	self.pwm_cmd.prop2 = self.throttle_pwm - self.out_roll - self.out_pitch
-	self.pwm_cmd.prop3 = self.throttle_pwm - self.out_roll + self.out_pitch
-	self.pwm_cmd.prop4 = self.throttle_pwm + self.out_roll + self.out_pitch
+	self.pwm_cmd.prop1 = self.throttle_pwm + self.out_roll - self.out_pitch - self.out_yaw
+	self.pwm_cmd.prop2 = self.throttle_pwm - self.out_roll - self.out_pitch + self.out_yaw
+	self.pwm_cmd.prop3 = self.throttle_pwm - self.out_roll + self.out_pitch - self.out_yaw
+	self.pwm_cmd.prop4 = self.throttle_pwm + self.out_roll + self.out_pitch + self.out_yaw
 
+	if self.pwm_cmd.prop1 < 0:
+		self.pwm_cmd.prop1 = 0
+	if self.pwm_cmd.prop2 < 0:
+		self.pwm_cmd.prop2 = 0
+	if self.pwm_cmd.prop3 < 0:
+		self.pwm_cmd.prop3 = 0
+	if self.pwm_cmd.prop4 < 0:
+		self.pwm_cmd.prop4 = 0
 
-
+	if self.pwm_cmd.prop1 > 1024:
+		self.pwm_cmd.prop1 = 1024
+	if self.pwm_cmd.prop2 > 1024:
+		self.pwm_cmd.prop2 = 1024
+	if self.pwm_cmd.prop3 > 1024:
+		self.pwm_cmd.prop3 = 1024
+	if self.pwm_cmd.prop4 > 1024:
+		self.pwm_cmd.prop4 = 1024
 
 
 	
