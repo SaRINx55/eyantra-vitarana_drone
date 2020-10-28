@@ -61,9 +61,9 @@ class Edrone():
 	self.err_pitch = error_pitch()
         # initial setting of Kp, Kd and ki for [roll, pitch, yaw]. eg: self.Kp[2] corresponds to Kp value in yaw axis
         # after tuning and computing corresponding PID parameters, change the parameters
-        self.Kp = [0, 0, 0]
-        self.Ki = [0, 0, 0]
-        self.Kd = [0, 0, 0]
+        self.Kp = [13.08, 7.86, 66]
+        self.Ki = [0.8, 0.8, 0]
+        self.Kd = [59.1, 59.1, 26.1]
         # -----------------------Add other required variables for pid here ----------------------------------------------
         #
 	self.error = [0.0, 0.0, 0.0]
@@ -101,9 +101,9 @@ class Edrone():
         # Subscribing to /drone_command, imu/data, /pid_tuning_roll, /pid_tuning_pitch, /pid_tuning_yaw
         rospy.Subscriber('/drone_command', edrone_cmd, self.drone_command_callback)
         rospy.Subscriber('/edrone/imu/data', Imu, self.imu_callback)
-        rospy.Subscriber('/pid_tuning_roll', PidTune, self.roll_set_pid)
-	rospy.Subscriber('/pid_tuning_yaw', PidTune, self.yaw_set_pid)
-	rospy.Subscriber('/pid_tuning_pitch', PidTune, self.pitch_set_pid)
+       # rospy.Subscriber('/pid_tuning_roll', PidTune, self.roll_set_pid)
+	#rospy.Subscriber('/pid_tuning_yaw', PidTune, self.yaw_set_pid)
+	#rospy.Subscriber('/pid_tuning_pitch', PidTune, self.pitch_set_pid)
 
         # -------------------------Add other ROS Subscribers here---------------------------------------------------
 	 
@@ -118,7 +118,7 @@ class Edrone():
     # We need to convert the quaternion format to euler angles format to understand the orienataion of the edrone in an easy manner.
     # Hint: To know the message structure of sensor_msgs/Imu, execute the following command in the terminal
     # rosmsg show sensor_msgs/Imu
-
+	
     def imu_callback(self, msg):
 
         self.drone_orientation_quaternion[0] = msg.orientation.x
@@ -140,21 +140,25 @@ class Edrone():
 
     # Callback function for /pid_tuning_roll
     # This function gets executed each time when /tune_pid publishes /pid_tuning_roll
-    def roll_set_pid(self, roll):
-        self.Kp[0] = roll.Kp *0.06  # This is just for an example. You can change the ratio/fraction value accordingly
-        self.Ki[0] = roll.Ki * 0.008
-        self.Kd[0] = roll.Kd * 0.3
+
+#************************************************************************************************************************************************#
+  #  def roll_set_pid(self, roll):
+     #   self.Kp[0] = roll.Kp *0.06  # This is just for an example. You can change the ratio/fraction value accordingly
+    #    self.Ki[0] = roll.Ki * 0.008
+    #    self.Kd[0] = roll.Kd * 0.3
 
     # ----------------------------Define callback function like roll_set_pid to tune pitch, yaw--------------
-    def pitch_set_pid(self, pitch):
-	self.Kp[1] = pitch.Kp *0.06
-	self.Ki[1] = pitch.Ki * 0.008
-	self.Kd[1] = pitch.Kd * 0.3
+   # def pitch_set_pid(self, pitch):
+	#self.Kp[1] = pitch.Kp *0.06
+	#self.Ki[1] = pitch.Ki * 0.008
+#	self.Kd[1] = pitch.Kd * 0.3
 
-    def yaw_set_pid(self, yaw):
-	self.Kp[2] = yaw.Kp 
-	self.Ki[2] = yaw.Ki * 0.008
-	self.Kd[2] = yaw.Kd * 0.3
+   # def yaw_set_pid(self, yaw):
+#	self.Kp[2] = yaw.Kp 
+#	self.Ki[2] = yaw.Ki * 0.008
+#	self.Kd[2] = yaw.Kd * 0.3
+
+#*************************************************************************************************************************************************#
     # ----------------------------------------------------------------------------------------------------------------------
 
     def pid(self):
@@ -271,7 +275,8 @@ if __name__ == '__main__':
 
     e_drone = Edrone()
     r = rospy.Rate(e_drone.sample_time)  # specify rate in Hz based upon your desired PID sampling time, i.e. if desired sample time is 33ms specify rate as 30Hz
-  
+    
+    rospy.sleep(5)
     while not rospy.is_shutdown():
         e_drone.pid()
         r.sleep()
