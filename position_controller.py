@@ -41,6 +41,13 @@ class Edrone():
 
 		self.sample_time = 15
 
+		self.z_pub = error_z()
+		self.z_pub.zerror = 0
+
+		self.x_pub = error_x()
+		self.x_pub.xerror = 0
+
+
 		self.rc_pub = edrone_cmd()
 		self.rc_pub.rcThrottle = 1000
 		self.rc_pub.rcRoll = 1500
@@ -48,7 +55,8 @@ class Edrone():
 		self.rc_pub.rcYaw = 1500
 
 		self.rc_pos_pub = rospy.Publisher('/drone_command', edrone_cmd, queue_size=1)
-
+		self.z_err_pub = rospy.Publisher('/zerror', error_z, queue_size=1)
+		self.x_err_pub = rospy.Publisher('/xerror', error_x, queue_size=1)
 
 		rospy.Subscriber('/edrone/gps', NavSatFix, self.drone_gps_callback)
 		rospy.Subscriber('/pid_tuning_altitude', PidTune, self.throttle_pid)
@@ -69,9 +77,9 @@ class Edrone():
 		self.Kd[0] = throttle.Kd * 0.3 
 
 	def pitch_pid(self, pitch):
-		self.Kp[1] = pitch.Kp * 15
+		self.Kp[1] = pitch.Kp * 30
 		self.Ki[1] = pitch.Ki * 0.8 
-		self.Kd[1] = pitch.Kd * 40
+		self.Kd[1] = pitch.Kd * 70
 
 	def roll_pid(self, roll):
 		self.Kp[2] = roll.Kp * 0.06
@@ -94,18 +102,22 @@ class Edrone():
 		print("**********")
 
 		self.rc_pub.rcThrottle = 1500 + self.z_error
-
+		
 		self.rc_pos_pub.publish(self.rc_pub)
-
+	
+		self.z_pub.zerror = self.errorZ
+		self.z_err_pub.publish(self.z_pub)
 
 
 		
 
 
 		self.errorX = (self.set_latitude - self.latitude)
+		self.x_pub.xerror = self.errorX
+		self.x_err_pub.publish(self.x_pub)
 
 		if self.errorZ <= 0:
-			
+			#rospy.sleep(0.003)
 
 			self.errorX = (self.set_latitude - self.latitude) 
 			self.Iterm[1] = (self.Iterm[1] + self.errorX)*self.Ki[1]
@@ -123,16 +135,21 @@ class Edrone():
 
 			#self.rc_pub.rcThrottle = 1500
 			self.rc_pos_pub.publish(self.rc_pub)
+
+			#self.x_pub.xerror = self.errorX
+			self.x_err_pub.publish(self.x_pub)
 			
 
-		if self.errorX <= 0 :
-			
+		#if self.errorX <= 0 :
+		#	rospy.sleep(0.003)
 
-			 
-			self.rc_pub.rcThrottle = 1495 - self.z_error
-			print("Stage 3")
-			#self.rc_pub.rcThrottle = 1500
-			self.rc_pos_pub.publish(self.rc_pub)
+		#	self.rc_pub.rcRoll = 1500
+		#	self.rc_pub.rcPitch = 1500
+		#	self.rc_pub.rcYaw = 1500
+		#	self.rc_pub.rcThrottle = 1490
+		#	print("Stage 3")
+		#	#self.rc_pub.rcThrottle = 1500
+		#	self.rc_pos_pub.publish(self.rc_pub)
 
 
 		
